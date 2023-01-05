@@ -1,5 +1,4 @@
 import csv
-import re
 from datetime import datetime
 import mysql.connector as mysql
 
@@ -11,16 +10,6 @@ con = mysql.connect(
         password="",
         database="walmart"
     )
-
-def validate_email(email):
-    """
-        a function that validates the email
-        of a walmart manager
-    """
-    pat = "^[a-zA-Z]+[.]+[a-zA-Z]+@Walmart.org$"
-    if re.match(pat, email):
-        return True
-    return False
 
 def extract_name_from_email(row):
     """
