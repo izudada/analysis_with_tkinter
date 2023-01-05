@@ -4,6 +4,21 @@ import mysql.connector as mysql
 import re
 
 
+def back_button(frame):
+    # 'back' button widget
+    tk.Button(
+		frame,
+		text="Back",
+		font=("TkHeadingFont", 12),
+		bg="black",
+		fg="white",
+		cursor="hand2",
+		activebackground=bg,
+		activeforeground="black",
+		command=lambda:load_frame_1()
+		).place(x=200, y=350)
+
+
 def fetch_manager_data_from_db():
     """
         A function that fetches
@@ -224,18 +239,8 @@ def manager_form():
             command=lambda:update()
         ).place(x=100, y=350)
 
-    # 'back' button widget
-    tk.Button(
-		frame2,
-		text="Back",
-		font=("TkHeadingFont", 12),
-		bg="black",
-		fg="white",
-		cursor="hand2",
-		activebackground=bg,
-		activeforeground="black",
-		command=lambda:load_frame_1()
-		).place(x=200, y=350)
+    #   back button
+    back_button(frame2)
 
 
 def clear_widgets(frame):
@@ -252,11 +257,58 @@ def load_manager_frame():
     """
     clear_widgets(frame1)
     frame2.tkraise()
-    # result = fetch_manager_data_from_db()
 
     #   manager form
     manager_form()
 
+
+def load_frame_3():
+    """
+        A function that contains frame 1 widgets
+    """
+    clear_widgets(frame1)
+	# stack frame 1 above frame 2
+    frame3.tkraise()
+    frame3.pack_propagate(False)
+
+    #   database connection
+    con = mysql.connect(
+        host="localhost", 
+        user="root", 
+        password="",
+        database="walmart"
+    )
+    #   create db connection
+    cursor = con.cursor()
+    result = []
+    #   calculate mean of each store type
+    sql_command = "select avg(size) from store where store_type=%s"
+    cursor.execute(sql_command, ["A"])
+    result.append(cursor.fetchone()[0])
+    cursor.execute(sql_command, ["B"])
+    result.append(cursor.fetchone()[0])
+    cursor.execute(sql_command, ["C"])
+    result.append(cursor.fetchone()[0])
+    con.close()
+    headers = ["Store A", "Store B", "Store C"]
+
+    #   Create mean table 
+    for x in range(1):
+        for y in range(3):
+            frameGrid = tk.Frame(
+                master=frame3,
+                relief=tk.RAISED,
+                borderwidth=2,
+                bg=bg
+            )
+            frameGrid.grid(row=x, column=y, padx=5, pady=5)
+            labelGridHeader = tk.Label(master=frameGrid, text=headers[y], font=('bold', 12), bg=bg)
+            labelGridHeader.pack(padx=3, pady=3)
+            labelGrid = tk.Label(master=frameGrid, text=result[y], bg=bg)
+            labelGrid.pack(padx=10, pady=3)
+
+     #   back button
+    back_button(frame3)
 
 
 def load_frame_1():
@@ -273,11 +325,25 @@ def load_frame_1():
             frame1,
             text="View Managers",
             font=("TkHeadingFont", 16),
-            bg=bg,
-            activebackground="#000000",
-            activeforeground=bg,
+            bg="black",
+            fg="white",
+            activebackground=bg,
+            activeforeground="black",
             cursor="hand1",
             command=lambda:load_manager_frame()
+        ).pack(pady=50)
+
+    #   view managers button
+    tk.Button(
+            frame1,
+            text="Mean Size",
+            font=("TkHeadingFont", 16),
+            bg="black",
+            fg="white",
+            activebackground=bg,
+            activeforeground="black",
+            cursor="hand1",
+            command=lambda:load_frame_3()
         ).pack(pady=50)
 
 
@@ -296,8 +362,9 @@ y = root.winfo_screenheight()
 
 frame1 = tk.Frame(root, width=x, height=y, bg=bg)
 frame2 = tk.Frame(root, width=x, height=y, bg="white")
+frame3 = tk.Frame(root, width=x, height=y, bg=bg)
 
-for frame in (frame1, frame2):
+for frame in (frame1, frame2, frame3):
     frame.grid(row=0, column=0, sticky="nesw")
     
 
