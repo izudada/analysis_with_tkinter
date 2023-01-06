@@ -2,6 +2,9 @@ import tkinter as tk
 import tkinter.messagebox as MessageBox
 import mysql.connector as mysql
 import re
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def back_button(frame):
@@ -118,32 +121,32 @@ def manager_form():
 
         if store == "" or name == "" or year == "" or email == "" or address == "" or city == "" or state == "" or zip_code == "":
             MessageBox.showinfo("Form Error","All fields must be filled before updating")
-
-        #   update if email is valid
-        if validate_email(email) == True:
-            #   create db connection
-            cur = con.cursor()
-            cur.execute("UPDATE store_info SET store=%s, manager=%s, year_as_manager=%s, email=%s, address=%s, city=%s, state=%s, zip_code=%s WHERE id = %s", (store, name, year, email, address, city, state, zip_code, int(row_id)))
-            con.commit()
-            con.close()
-
-            #   clear form
-            id_entry.delete(0, 'end')
-            store_entry.delete(0, 'end')
-            name_entry.delete(0, 'end')
-            year_entry.delete(0, 'end')
-            email_entry.delete(0, 'end')
-            address_entry.delete(0, 'end')
-            city_entry.delete(0, 'end')
-            state_entry.delete(0, 'end')
-            zip_entry.delete(0, 'end')
-
-            #   reload list box
-            result = fetch_manager_data_from_db()
-            show(result) 
-            MessageBox.showinfo("Success","Record updated successfully")
         else:
-            MessageBox.showinfo("Form Error","Email is invalid, use appropriate format")
+            #   update if email is valid
+            if validate_email(email) == True:
+                #   create db connection
+                cur = con.cursor()
+                cur.execute("UPDATE store_info SET store=%s, manager=%s, year_as_manager=%s, email=%s, address=%s, city=%s, state=%s, zip_code=%s WHERE id = %s", (store, name, year, email, address, city, state, zip_code, int(row_id)))
+                con.commit()
+                con.close()
+
+                #   clear form
+                id_entry.delete(0, 'end')
+                store_entry.delete(0, 'end')
+                name_entry.delete(0, 'end')
+                year_entry.delete(0, 'end')
+                email_entry.delete(0, 'end')
+                address_entry.delete(0, 'end')
+                city_entry.delete(0, 'end')
+                state_entry.delete(0, 'end')
+                zip_entry.delete(0, 'end')
+
+                #   reload list box
+                result = fetch_manager_data_from_db()
+                show(result) 
+                MessageBox.showinfo("Success","Record updated successfully")
+            else:
+                MessageBox.showinfo("Form Error","Email is invalid, use appropriate format")
 
     label_bg = "white"
 
@@ -227,7 +230,7 @@ def manager_form():
             command=lambda:populate()
         ).place(x=20, y=350)
 
-    #   populate button
+    #   update button
     tk.Button(
             frame2,
             text="Update",
@@ -311,11 +314,114 @@ def load_frame_3():
     back_button(frame3)
 
 
+def load_frame_4():
+    """
+        a function that calculates the time series of
+        store 1 and department 1
+    """
+    clear_widgets(frame3)
+	# stack frame 1 above frame 2
+    frame4.tkraise()
+    frame4.pack_propagate(False)
+
+    def cal_time_series():
+        """
+            A function that calculates time series from two
+            form inputs
+        """
+        con = mysql.connect(
+            host="localhost", 
+            user="root", 
+            password="",
+            database="walmart"
+        )
+        cursor = con.cursor()
+        #   get fields
+        store_id = store_entry.get()
+        dept_id = dept_entry.get()
+
+        if store_id == "" or dept_id == "":
+                MessageBox.showinfo("Form Error","All fields must be filled before updating")
+        else:
+            #   fetch date and weekly sales for department 1 under store 1 and 
+            try:
+                cursor.execute("select date, weekly_sales from sales where store=%s and department=%s", [int(store_id), int(dept_id)])
+                result = cursor.fetchall()
+                con.close()
+                if len(result) == 0:
+                    MessageBox.showinfo("Form Error","Please enter a vaild store and department number")
+                else:
+                    df = pd.DataFrame(result, columns = ['date', 'weekly_sales'])
+                    # df['date'] = pd.to_datetime(df['date'])
+                    plt.plot(df.date, df.weekly_sales)
+                    plt.title('A series of sales versus date')
+                    plt.xticks(rotation=30, ha='right')
+                    plt.xlabel('Date')
+                    plt.ylabel('Weekly Sales')
+                    plt.show()
+            except Exception as e:
+                print(e)
+                MessageBox.showinfo("Form Error","Please enter a vaild store and department number")
+
+    #   database connection
+    con = mysql.connect(
+        host="localhost", 
+        user="root", 
+        password="",
+        database="walmart"
+    )
+    label_bg = "white"
+
+    #   create db connection
+    cursor = con.cursor()
+    #  max store number
+    cursor.execute("SELECT MAX(store), Max(department) FROM sales")
+    ranges = cursor.fetchone()
+
+    #   labels
+    max_fields = f"""
+                    Note: Enter the Store and Department IDs to
+                    create a time series for the two criteria.
+                    Also store ID range from 1 to {ranges[0]}
+                    and department from 1 to {ranges[1]}
+                """
+    note= tk.Label(frame4, text=max_fields, font=('bold', 7), background=label_bg, fg="red")
+    note.place(x=0, y=0)
+
+    store_id= tk.Label(frame4, text="Store ID", font=('bold', 10), background=label_bg, fg="black")
+    store_id.place(x=20, y=100)
+
+    dept= tk.Label(frame4, text="Department ID", font=('bold', 10), background=label_bg, fg="black")
+    dept.place(x=20, y=150)
+
+    #   inputs
+    store_entry = tk.Entry()
+    store_entry.place(x=200, y=100)
+
+    dept_entry = tk.Entry()
+    dept_entry.place(x=200, y=150)
+
+    #   update button
+    tk.Button(
+            frame4,
+            text="Get Time Series",
+            font=("TkHeadingFont", 12),
+            bg=bg,
+            activebackground="white",
+            activeforeground="black",
+            cursor="hand1",
+            command=lambda:cal_time_series()
+        ).place(x=200, y=200)
+
+    back_button(frame4)
+
+
 def load_frame_1():
     """
         A function that contains frame 1 widgets
     """
     clear_widgets(frame2)
+    clear_widgets(frame1)
 	# stack frame 1 above frame 2
     frame1.tkraise()
     frame1.pack_propagate(False)
@@ -346,6 +452,19 @@ def load_frame_1():
             command=lambda:load_frame_3()
         ).pack(pady=50)
 
+    #   time series button
+    tk.Button(
+            frame1,
+            text="Time Series",
+            font=("TkHeadingFont", 16),
+            bg="black",
+            fg="white",
+            activebackground=bg,
+            activeforeground="black",
+            cursor="hand1",
+            command=lambda:load_frame_4()
+        ).pack(pady=50)
+
 
 #   initialize app
 root = tk.Tk()
@@ -363,8 +482,9 @@ y = root.winfo_screenheight()
 frame1 = tk.Frame(root, width=x, height=y, bg=bg)
 frame2 = tk.Frame(root, width=x, height=y, bg="white")
 frame3 = tk.Frame(root, width=x, height=y, bg=bg)
+frame4 = tk.Frame(root, width=x, height=y, bg="white")
 
-for frame in (frame1, frame2, frame3):
+for frame in (frame1, frame2, frame3, frame4):
     frame.grid(row=0, column=0, sticky="nesw")
     
 
