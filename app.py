@@ -1,10 +1,11 @@
 import tkinter as tk
 import tkinter.messagebox as MessageBox
-import mysql.connector as mysql
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import sqlite3
+
 
 
 def back_button(frame):
@@ -27,12 +28,7 @@ def fetch_manager_data_from_db():
         A function that fetches
         sales info data
     """
-    con = mysql.connect(
-        host="localhost", 
-        user="root", 
-        password="",
-        database="walmart"
-    )
+    con = sqlite3.connect('walmart.db')
     #   create db connection
     cursor = con.cursor()
     #   pull data from database
@@ -65,12 +61,7 @@ def manager_form():
             A function that populates
             the manager form
         """
-        con = mysql.connect(
-            host="localhost", 
-            user="root", 
-            password="",
-            database="walmart"
-        )
+        con = sqlite3.connect('walmart.db')
 
         row_id = id_entry.get();
         #   create db connection
@@ -80,7 +71,7 @@ def manager_form():
             MessageBox.showinfo("Form Error","You must enter ID")
         else:
             try:
-                cur.execute("SELECT * FROM store_info WHERE id=%s", [row_id])
+                cur.execute("SELECT * FROM store_info WHERE id=?", [row_id])
                 store_result = cur.fetchone()
                 con.close()
 
@@ -102,12 +93,7 @@ def manager_form():
             A function that updates a 
             manager record
         """
-        con = mysql.connect(
-            host="localhost", 
-            user="root", 
-            password="",
-            database="walmart"
-        )
+        con = sqlite3.connect('walmart.db')
         #   get fields
         row_id = id_entry.get()
         store = store_entry.get()
@@ -126,7 +112,7 @@ def manager_form():
             if validate_email(email) == True:
                 #   create db connection
                 cur = con.cursor()
-                cur.execute("UPDATE store_info SET store=%s, manager=%s, year_as_manager=%s, email=%s, address=%s, city=%s, state=%s, zip_code=%s WHERE id = %s", (store, name, year, email, address, city, state, zip_code, int(row_id)))
+                cur.execute("UPDATE store_info SET store=?, manager=?, year_as_manager=?, email=?, address=?, city=?, state=?, zip_code=? WHERE id = ?", (store, name, year, email, address, city, state, zip_code, int(row_id)))
                 con.commit()
                 con.close()
 
@@ -275,17 +261,12 @@ def load_frame_3():
     frame3.pack_propagate(False)
 
     #   database connection
-    con = mysql.connect(
-        host="localhost", 
-        user="root", 
-        password="",
-        database="walmart"
-    )
+    con = sqlite3.connect('walmart.db')
     #   create db connection
     cursor = con.cursor()
     result = []
     #   calculate mean of each store type
-    sql_command = "select avg(size) from store where store_type=%s"
+    sql_command = "select avg(size) from store where store_type=?"
     cursor.execute(sql_command, ["A"])
     result.append(cursor.fetchone()[0])
     cursor.execute(sql_command, ["B"])
@@ -329,12 +310,7 @@ def load_frame_4():
             A function that calculates time series from two
             form inputs
         """
-        con = mysql.connect(
-            host="localhost", 
-            user="root", 
-            password="",
-            database="walmart"
-        )
+        con = sqlite3.connect('walmart.db')
         cursor = con.cursor()
         #   get fields
         store_id = store_entry.get()
@@ -345,7 +321,7 @@ def load_frame_4():
         else:
             #   fetch date and weekly sales for department 1 under store 1 and 
             try:
-                cursor.execute("select date, weekly_sales from sales where store=%s and department=%s", [int(store_id), int(dept_id)])
+                cursor.execute("select date, weekly_sales from sales where store=? and department=?", [int(store_id), int(dept_id)])
                 result = cursor.fetchall()
                 con.close()
                 if len(result) == 0:
