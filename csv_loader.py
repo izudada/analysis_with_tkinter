@@ -1,15 +1,9 @@
 import csv
 from datetime import datetime
-import mysql.connector as mysql
+import sqlite3
 
 
-#   database connection
-con = mysql.connect(
-        host="localhost", 
-        user="root", 
-        password="",
-        database="walmart"
-    )
+con = sqlite3.connect('walmart.db')
 
 def extract_name_from_email(row):
     """
@@ -59,9 +53,9 @@ def load_stores_data_set():
                 else:
                     #   insert into store table
                     if row[2] == '':
-                        cursor.execute("INSERT into store(id, store_type) VALUES(%s, %s)", (row[0] , row[1]))
+                        cursor.execute("INSERT into store(id, store_type) VALUES(?, ?)", (row[0] , row[1]))
                     else:
-                        cursor.execute("INSERT into store(id, store_type, size) VALUES(%s, %s, %s)", (row[0] , row[1], int(row[2])))
+                        cursor.execute("INSERT into store(id, store_type, size) VALUES(?, ?, ?)", (row[0] , row[1], int(row[2])))
                     con.commit()
                     cursor.close() 
         print("stores data set loaded successfully")
@@ -104,7 +98,7 @@ def load_sales_data_set():
                         is_holiday = 1
                     
                     #   insert record into db
-                    cursor.execute("INSERT into sales(store, department, date, weekly_sales, is_holiday) VALUES(%s, %s, %s, %s, %s)", (row[0], int(row[1]), sales_date, float(row[3]), is_holiday))
+                    cursor.execute("INSERT into sales(store, department, date, weekly_sales, is_holiday) VALUES(?, ?, ?, ?, ?)", (row[0], int(row[1]), sales_date, float(row[3]), is_holiday))
                     con.commit()
                     cursor.close() 
         print("sales data set loaded successfully")
@@ -151,7 +145,7 @@ def load_features_data_set():
                         is_holiday = 1
                     
                     #   insert record into db
-                    cursor.execute("INSERT into feature(store, date, temperature, fuel_price, mark_down_1, mark_down_2, mark_down_3, mark_down_4, mark_down_5, cpi, unemployment, is_holiday) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (row[0], feature_date, float(row[2]), float(row[3]), row[4], row[5], row[6], row[7], row[8], row[9], row[10], is_holiday))
+                    cursor.execute("INSERT into feature(store, date, temperature, fuel_price, mark_down_1, mark_down_2, mark_down_3, mark_down_4, mark_down_5, cpi, unemployment, is_holiday) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (row[0], feature_date, float(row[2]), float(row[3]), row[4], row[5], row[6], row[7], row[8], row[9], row[10], is_holiday))
                     con.commit()
                     cursor.close() 
         print("features data set loaded successfully")
@@ -198,7 +192,7 @@ def load_store_info():
 
                     address = row[4].split(';')
                     if str(row[4]) in all_adress:
-                        cursor.execute("INSERT into store_info(store, manager, year_as_manager, email, address, city, state, zip_code) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)", (all_adress[str(row[4])] , name, row[2], email, address[0], address[1], address[2], address[3]))
+                        cursor.execute("INSERT into store_info(store, manager, year_as_manager, email, address, city, state, zip_code) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (all_adress[str(row[4])] , name, row[2], email, address[0], address[1], address[2], address[3]))
                     else:   
                         #   condition to clean duplicate store
                         store_id = 1
@@ -206,7 +200,7 @@ def load_store_info():
                         if len(all_adress) > 0:
                             store_id = int(max(all_adress.values())) + 1
 
-                        cursor.execute("INSERT into store_info(store, manager, year_as_manager, email, address, city, state, zip_code) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)", (store_id , name, row[2], email, address[0], address[1], address[2], address[3]))
+                        cursor.execute("INSERT into store_info(store, manager, year_as_manager, email, address, city, state, zip_code) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (store_id , name, row[2], email, address[0], address[1], address[2], address[3]))
 
                     con.commit()
                     cursor.close() 
