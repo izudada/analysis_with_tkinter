@@ -66,20 +66,18 @@ If you are running a linux OS you will need to install python2-tk manaully to be
 ```
     sudo apt-get install python3-tk
 ```
-- for indows Tkinter comes pre-installed when installing python software but thos stackoverflow page might help if any isue arises. [Here](https://stackoverflow.com/questions/20044559/how-to-pip-or-easy-install-tkinter-on-windows)
+- for Windows Tkinter comes pre-installed when installing python software but thos stackoverflow page might help if any isue arises. [Here](https://stackoverflow.com/questions/20044559/how-to-pip-or-easy-install-tkinter-on-windows)
 
 ### Schema and Database
-The Entity Relationaship Diagram for the MYSQL data base can be found [here](walmart_erd.pdf) 
+An SQLite database exists as walmart.db
 
-The sql database has already been exported [here](walmart.sql). But running the csv_loader will populate the database with the record in the csv files within the "datasets" directory.
-To populate the database wit the csv files run:
+The dabase and respective tables were created with schema.py file
+
+To run the app enter the below in your teminal
+### Run project
 ```
-    python csv_loader.py
+python app.py
 ```
-
-Note: some of the csv files are with thousands of records. Depending on the processor speed of your machine this will take hours to conclude. 
-Thus it is time efficient to import the sql file into XAMPP or into a MYSQL db.
-
 ##  Screenhots or Usage
 The required screenshots and usage are compiled [here](Series_sales_versus_date.pdf)
 
