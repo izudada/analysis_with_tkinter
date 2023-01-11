@@ -212,8 +212,8 @@ def load_store_info():
 
 load_stores_data_set()
 
-load_sales_data_set()
+load_store_info()
 
 load_features_data_set()
 
-load_store_info()
+load_sales_data_set()
