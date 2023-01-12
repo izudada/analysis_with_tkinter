@@ -340,12 +340,7 @@ def load_frame_4():
                 MessageBox.showinfo("Form Error","Please enter a vaild store and department number")
 
     #   database connection
-    con = mysql.connect(
-        host="localhost", 
-        user="root", 
-        password="",
-        database="walmart"
-    )
+    con = sqlite3.connect('walmart.db')
     label_bg = "white"
 
     #   create db connection
